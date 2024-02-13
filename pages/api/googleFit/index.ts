@@ -34,6 +34,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       access_type: 'offline',
       scope: SCOPES,
     });
+    console.log(authUrl);
     res.status(200).json({ message: 'Get API for google fit', authUrl: authUrl });
     //res.redirect(authUrl);
   } catch (error) {
