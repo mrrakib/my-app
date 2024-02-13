@@ -19,7 +19,11 @@ const handler = async (req, res) => {
     console.log(code);
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
-
+    
+    //setting the token globally
+    google.options({
+      auth: oAuth2Client
+    });
     //const endUtc = Date.now() + 24 * 60 * 60 * 1000;
 
     const endTimeMillisInTS = Date.now() + 24 * 60 * 60 * 1000;
