@@ -20,10 +20,46 @@ const handler = async (req, res) => {
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
 
-    // Set start and end time for data aggregation
-    const startTimeMillis = Date.now() - 8 * 24 * 60 * 60 * 1000; // Example: 7 days ago
-    const endTimeMillis = Date.now(); // Current time
+    //const endUtc = Date.now() + 24 * 60 * 60 * 1000;
 
+    const endTimeMillisInTS = Date.now() + 24 * 60 * 60 * 1000;
+
+    // Convert to UTC Unix time
+    const endTimeUTC = Date.parse(new Date(endTimeMillisInTS).toUTCString());
+
+    // Calculate 7 days before and reset to start of the day
+    const sevenDaysBefore = 7 * 24 * 60 * 60 * 1000;
+    const startTimeMillis = Date.parse(new Date(endTimeUTC - sevenDaysBefore).toISOString().split('T')[0]);
+
+    // Adjust the endTimeUTC to the end of the day
+    const endOfDayMillis = 24 * 60 * 60 * 1000 - 1; // 23:59:59.999
+    const endTimeMillis = endTimeUTC - (2 * 24 * 60 * 60 * 1000) + endOfDayMillis;
+    
+    //=============== working============
+    // const endOfDayMillis = 24 * 60 * 60 * 1000 - 1; // 23:59:59.999
+    // const endTimeMillis1 = Date.now() + 24 * 60 * 60 * 1000;
+    // const endTimeUTC = Date.parse(new Date(endTimeMillis1).toUTCString());
+    // const endTimeMillis = endTimeUTC + endOfDayMillis;
+    // console.log('current end time: ' + endTimeMillis);
+    // const sevenDaysBefore = 7 * 24 * 60 * 60 * 1000;
+    // const startTimeMillis = Date.parse(new Date(endTimeUTC - sevenDaysBefore).toISOString().split('T')[0]);
+    // console.log('current start time: ' + startTimeMillis);
+    //=========== end working===========
+
+    //=========actual============
+    // const sevenDaysInMillis = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    // const startTimeMillis = Date.now() - sevenDaysInMillis; // Start time is 7 days ago
+    // const endTimeMillis = Date.now() + 24 * 60 * 60 * 1000; // End time is the current time
+    //===========end actual==========
+
+
+    // Convert to UTC Unix time
+    // const endTimeUTC = Date.parse(new Date(endUtc).toUTCString());
+    // const startTimeMillis = endTimeUTC - (7 * 24 * 60 * 60 * 1000);
+    // const endTimeMillis = endTimeUTC;
+    // console.log('UTC Unix start Time:', startTimeMillis);
+
+    // console.log('UTC Unix end Time:', endTimeMillis);
     const fitness = google.fitness({ version: 'v1', auth: oAuth2Client });
 
     const response = await fitness.users.dataset.aggregate({
@@ -62,6 +98,7 @@ const handler = async (req, res) => {
         startTimeMillis,
         endTimeMillis,
       },
+      
     });
 
     const fitnessData = response.data.bucket;
